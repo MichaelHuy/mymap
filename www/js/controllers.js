@@ -35,6 +35,7 @@ angular.module('starter.controllers', [])
 
     marker.setPosition(myLatlng);
     marker.setMap($scope.map);
+	//ssss
 
 
       $scope.loading.hide();
