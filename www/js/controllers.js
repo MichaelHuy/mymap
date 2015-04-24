@@ -4,6 +4,10 @@ angular.module('starter.controllers', [])
 
     $scope.positions = [];
 
+    $scope.$on('mapInitialized', function(event, map) {
+        $scope.map = map;
+    });
+
     $scope.centerOnMe = function () {
     console.log("Centering");
     if (!$scope.map) {
@@ -17,34 +21,59 @@ angular.module('starter.controllers', [])
 
     navigator.geolocation.getCurrentPosition(function (pos) {
       console.log('Got pos', pos);
-      var myLatlng = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
+      var currentPosition = new google.maps.LatLng(pos.coords.latitude, pos.coords.longitude);
 
       $scope.positions.push({lat: pos.coords.latitude,lng: pos.coords.longitude});
-      $scope.lat = pos.coords.latitude;
-      $scope.lon = pos.coords.longitude;
-      $scope.$apply();
 
-      $scope.map.setCenter(myLatlng);
+      $scope.map.setCenter(currentPosition);
         // $scope.map .. this exists after the map is initialized
       // To add the marker to the map, use the 'map' property
       var marker = new google.maps.Marker({
-          position: myLatlng,
+          position: currentPosition,
           map: $scope.map,
           title:"My position!"
       });
 
-    marker.setPosition(myLatlng);
+    marker.setPosition(currentPosition);
     marker.setMap($scope.map);
-	//ssss
-
-
       $scope.loading.hide();
+
+
+      var directionsDisplay = new google.maps.DirectionsRenderer();;
+      var directionsService = new google.maps.DirectionsService();
+
+
+      console.log($scope.map);
+      directionsDisplay.setMap($scope.map);
+
+      function calcRoute() {
+        //var start = "10.78627,106.64538";
+        var start = new google.maps.LatLng(10.78627, 106.64538);
+
+        var request = {
+          origin: start,
+          destination: currentPosition,
+          optimizeWaypoints: true,
+          travelMode: google.maps.DirectionsTravelMode.DRIVING
+        };
+
+        directionsService.route(request, function(response, status) {
+          console.log('route enter!');  
+          if (status == google.maps.DirectionsStatus.OK) {
+            directionsDisplay.setDirections(response);            
+            console.log('status OK enter!');  
+          }
+        });
+      }
+
+      calcRoute();
+
+
+
     }, function (error) {
       alert('Unable to get location: ' + error.message);
     });
   };
-
-
 
   $scope.mapCreated = function(map) {
     $scope.map = map;
